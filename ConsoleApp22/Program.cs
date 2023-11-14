@@ -185,7 +185,7 @@ internal class Program
                 
                
         }
-        // 특정 행동 이후에 상점 메뉴 비활성화
+        
 
 
     }
