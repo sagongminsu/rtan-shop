@@ -51,10 +51,10 @@ internal class Program
         Console.WriteLine("1. 상태보기");
         Console.WriteLine("2. 인벤토리");
         Console.WriteLine("3. 상점");
+        Console.WriteLine("4. 던전");
         Console.WriteLine();
         Console.WriteLine("원하시는 행동을 입력해주세요.");
-
-        int input = CheckValidInput(1, 3);
+        int input = CheckValidInput(1, 4);
         switch (input)
         {
             case 1:
@@ -67,6 +67,10 @@ internal class Program
 
             case 3:
                 DisplayShop();
+                break;
+
+            case 4:
+                EnterDungeon();
                 break;
         }
     }
@@ -138,6 +142,8 @@ internal class Program
         Console.WriteLine("오! 젊은친구 어서오게");
         Console.WriteLine("판매 가능한 아이템을 표시합니다.");
         Console.WriteLine();
+        Console.WriteLine($"돈: {player.Gold} G");
+        Console.WriteLine();
 
         int index = 1;
         foreach (var item in shopInventory)
@@ -206,7 +212,6 @@ internal class Program
 
         Console.WriteLine();
         Console.WriteLine("0. 나가기");
-        Console.WriteLine("9. 돌아가기");
         Console.WriteLine("판매할 아이템을 선택해주세요.");
 
         int input = CheckValidInput(0, index - 1);
@@ -351,6 +356,96 @@ internal class Program
             Console.WriteLine("잘못된 입력입니다.");
         }
     }
+
+    static void EnterDungeon()
+    {
+        Console.Clear();
+
+        Console.WriteLine("던전에 입장합니다.");
+        Console.WriteLine("1. 쉬움 던전");
+        Console.WriteLine("2. 일반 던전");
+        Console.WriteLine("3. 어려운 던전");
+        Console.WriteLine();
+        Console.WriteLine("원하시는 던전의 난이도를 선택해주세요.");
+
+        int input = CheckValidInput(1, 3);
+        int recommendedDefense = 0;
+
+        switch (input)
+        {
+            case 1:
+                recommendedDefense = 5;
+                break;
+            case 2:
+                recommendedDefense = 10;
+                break;
+            case 3:
+                recommendedDefense = 15;
+                break;
+        }
+
+        int myDefense = player.Def; // 플레이어의 현재 방어력
+
+        if (myDefense < recommendedDefense)
+        {
+            Console.WriteLine($"현재 방어력({myDefense})으로는 권장 방어력({recommendedDefense})으로 던전을 수행하기에 부족합니다.");
+
+            if (new Random().Next(1, 101) <= 40)
+            {
+                Console.WriteLine("던전 수행 실패!");
+                player.Hp -= player.Hp / 2; // 체력 절반 감소
+                Console.WriteLine($"체력이 {player.Hp}로 감소했습니다.");
+            }
+            else
+            {
+                Console.WriteLine("던전을 성공적으로 통과하였습니다.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("던전을 성공적으로 통과하였습니다.");
+
+            int baseReward = 0;
+
+            switch (input)
+            {
+                case 1:
+                    baseReward = 1000;
+                    break;
+                case 2:
+                    baseReward = 1700;
+                    break;
+                case 3:
+                    baseReward = 2500;
+                    break;
+            }
+
+            int additionalReward = new Random().Next(player.Atk, player.Atk * 2 + 1) * baseReward / 100;
+
+            Console.WriteLine($"기본 보상: {baseReward} G");
+            Console.WriteLine($"공격력에 따른 추가 보상: {additionalReward} G");
+
+            int totalReward = baseReward + additionalReward;
+
+            Console.WriteLine($"총 보상: {totalReward} G");
+
+            // 플레이어의 체력 소모 계산
+            int minHpDecrease = 20;
+            int maxHpDecrease = 35;
+            int randomHpDecrease = new Random().Next(minHpDecrease, maxHpDecrease + 1) - (myDefense - recommendedDefense);
+
+            player.Hp -= randomHpDecrease;
+
+            Console.WriteLine($"던전 클리어로 인한 체력 소모: {randomHpDecrease}");
+            Console.WriteLine($"현재 체력: {player.Hp}");
+
+            player.Gold += totalReward; // 플레이어에게 보상 지급
+        }
+
+        Console.WriteLine("아무 키나 눌러주세요.");
+        Console.ReadKey();
+        DisplayGameIntro();
+    }
 }
 
 public enum ItemType
@@ -387,7 +482,7 @@ public class Character
     public int Level { get; }
     public int Atk { get; set; }
     public int Def { get; set; }
-    public int Hp { get; }
+    public int Hp { get; set; }
     public int Gold { get; set; }
     public List<Item> EquippedItems { get; } = new List<Item>();
 
